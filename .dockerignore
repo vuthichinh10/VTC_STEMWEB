@@ -1,0 +1,10 @@
+.git
+.github
+.env
+node_modules
+**/node_modules
+**/dist
+**/target
+*.log
+STEM_Lab_V4.html
+STEM_Lab_Codex_Implementation_Spec.md

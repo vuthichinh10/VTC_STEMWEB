@@ -1,0 +1,19 @@
+{
+  "name": "stem-lab",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run web -w @stem-lab/student-app",
+    "build:web": "npm run build:web -w @stem-lab/student-app",
+    "typecheck": "npm run typecheck -ws --if-present",
+    "test": "npm run test -ws --if-present",
+    "lint": "npm run lint -ws --if-present",
+    "format": "npm run format -ws --if-present",
+    "format:check": "npm run format:check -ws --if-present",
+    "test:api": "mvn -q -f services/api/pom.xml test",
+    "build:api": "mvn -q -f services/api/pom.xml package -DskipTests"
+  }
+}

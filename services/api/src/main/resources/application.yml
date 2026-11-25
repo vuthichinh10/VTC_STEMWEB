@@ -1,0 +1,26 @@
+spring:
+  application.name: stem-lab-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/stemlab}
+    username: ${SPRING_DATASOURCE_USERNAME:stemlab}
+    password: ${SPRING_DATASOURCE_PASSWORD:CHANGE_ME}
+  flyway:
+    enabled: true
+  session:
+    timeout: 8h
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
+management:
+  endpoints.web.exposure.include: health,info
+  endpoint.health.probes.enabled: true
+app:
+  cors-allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:8081}
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-5.2}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}

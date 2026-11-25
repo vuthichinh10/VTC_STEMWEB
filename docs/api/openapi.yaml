@@ -1,0 +1,162 @@
+openapi: 3.1.0
+info: { title: STEM Lab API, version: 0.2.0, description: M0/M1 and M2 foundation contract }
+servers: [{ url: /api/v1 }]
+paths:
+  /auth/csrf: { get: { summary: Issue CSRF cookie, responses: { '200': { description: OK } } } }
+  /auth/register:
+    post:
+      {
+        summary: Register a student account,
+        requestBody:
+          {
+            required: true,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Register' } } },
+          },
+        responses:
+          {
+            '201':
+              {
+                description: Registered,
+                content: { application/json: { schema: { $ref: '#/components/schemas/User' } } },
+              },
+          },
+      }
+  /auth/login:
+    post:
+      {
+        summary: Create session,
+        requestBody:
+          {
+            required: true,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Login' } } },
+          },
+        responses: { '200': { description: Signed in } },
+      }
+  /auth/logout:
+    { post: { summary: Destroy session, responses: { '204': { description: Signed out } } } }
+  /auth/me:
+    {
+      get:
+        {
+          summary: Current account,
+          responses:
+            { '200': { description: Account }, '401': { description: Authentication required } },
+        },
+    }
+  /lessons: { get: { summary: Published lessons, responses: { '200': { description: List } } } }
+  /lessons/{id}:
+    get:
+      {
+        summary: Lesson detail,
+        parameters: [{ name: id, in: path, required: true, schema: { type: string } }],
+        responses: { '200': { description: Lesson }, '404': { description: Missing } },
+      }
+  /lessons/{id}/progress:
+    get:
+      {
+        summary: Student progress,
+        parameters: [{ name: id, in: path, required: true, schema: { type: string } }],
+        responses: { '200': { description: Progress } },
+      }
+    put:
+      {
+        summary: Persist student progress,
+        parameters: [{ name: id, in: path, required: true, schema: { type: string } }],
+        requestBody:
+          {
+            required: true,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/ProgressUpdate' } } },
+          },
+        responses: { '200': { description: Saved } },
+      }
+  /modules: { get: { summary: Module catalog, responses: { '200': { description: List } } } }
+  /curriculum/projects:
+    { get: { summary: V4 project templates, responses: { '200': { description: List } } } }
+  /dashboard:
+    { get: { summary: Current or anonymous summary, responses: { '200': { description: Stats } } } }
+  /board-profiles/{id}:
+    get:
+      summary: Latest published board profile
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        { '200': { description: Versioned board profile }, '404': { description: Missing } }
+  /module-specs:
+    {
+      get:
+        {
+          summary: Module capabilities and suggested pins,
+          responses: { '200': { description: List } },
+        },
+    }
+  /circuits/validate:
+    post:
+      summary: Validate module pin assignments against a board profile
+      responses: { '200': { description: Validation issues } }
+  /projects:
+    post:
+      summary: Create a private Maker project and initial immutable revision
+      responses:
+        {
+          '200': { description: Project },
+          '401': { description: Authentication required },
+          '422': { description: Invalid circuit },
+        }
+  /projects/{id}:
+    get:
+      summary: Read an owned Maker project at its current revision
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        { '200': { description: Project }, '404': { description: Missing or inaccessible } }
+  /ai/tutor:
+    post:
+      summary: Ask the authenticated embedded-systems AI tutor through the server-side OpenAI Responses API
+      responses:
+        '200': { description: Tutor answer }
+        '401': { description: Authentication required }
+        '503': { description: OpenAI API key is not configured }
+        '502': { description: Provider unavailable or invalid response }
+components:
+  schemas:
+    Register:
+      {
+        type: object,
+        required: [displayName, username, password],
+        properties:
+          {
+            displayName: { type: string, minLength: 2, maxLength: 50 },
+            username: { type: string, minLength: 3, maxLength: 50 },
+            password: { type: string, minLength: 8, maxLength: 100 },
+          },
+      }
+    Login:
+      {
+        type: object,
+        required: [username, password],
+        properties: { username: { type: string }, password: { type: string } },
+      }
+    User:
+      {
+        type: object,
+        required: [id, displayName, username, role],
+        properties:
+          {
+            id: { type: string, format: uuid },
+            displayName: { type: string },
+            username: { type: string },
+            role: { enum: [STUDENT, TEACHER, ADMIN] },
+          },
+      }
+    ProgressUpdate:
+      {
+        type: object,
+        required: [step, prediction, observation, conclusion, completed],
+        properties:
+          {
+            step: { type: integer, minimum: 0, maximum: 3 },
+            prediction: { type: string, maxLength: 4000 },
+            observation: { type: string, maxLength: 4000 },
+            conclusion: { type: string, maxLength: 4000 },
+            completed: { type: boolean },
+          },
+      }
